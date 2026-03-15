@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/*
+  ===========================================
+  Ink & Light - Editorial Blog Design System
+  ===========================================
+*/
+
+@theme {
+  --color-background: 252 251 248;
+  --color-foreground: 28 28 28;
+  --color-card: 255 255 255;
+  --color-card-foreground: 28 28 28;
+  --color-popover: 255 255 255;
+  --color-popover-foreground: 28 28 28;
+  --color-primary: 28 28 28;
+  --color-primary-foreground: 252 251 248;
+  --color-secondary: 245 243 239;
+  --color-secondary-foreground: 28 28 28;
+  --color-muted: 245 243 239;
+  --color-muted-foreground: 120 118 114;
+  --color-accent: 201 169  98;
+  --color-accent-foreground: 28 28 28;
+  --color-destructive: 185 75  68;
+  --color-destructive-foreground: 252 251 248;
+  --color-border: 228 225 219;
+  --color-input: 228 225 219;
+  --color-ring: 201 169  98;
+  --radius: 0.125rem;
+}
+
+.dark {
+  --color-background: 20 20 18;
+  --color-foreground: 245 243 239;
+  --color-card: 28 28 26;
+  --color-card-foreground: 245 243 239;
+  --color-popover: 28 28 26;
+  --color-popover-foreground: 245 243 239;
+  --color-primary: 245 243 239;
+  --color-primary-foreground: 20 20 18;
+  --color-secondary: 38 38 36;
+  --color-secondary-foreground: 245 243 239;
+  --color-muted: 38 38 36;
+  --color-muted-foreground: 163 161 157;
+  --color-accent: 201 169  98;
+  --color-accent-foreground: 245 243 239;
+  --color-destructive: 220 98  89;
+  --color-destructive-foreground: 245 243 239;
+  --color-border: 48 48 46;
+  --color-input: 48 48 46;
+  --color-ring: 201 169  98;
+}
+
+* {
+  border-color: rgb(var(--color-border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+  font-family: "Noto Serif SC", "Cormorant Garamond", Georgia, serif;
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+.font-display {
+  font-family: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+/* Animations */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+.animation-delay-100 { animation-delay: 0.1s; }
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-300 { animation-delay: 0.3s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+
+/* Selection */
+::selection {
+  background-color: rgb(var(--color-accent));
+  color: rgb(var(--color-accent-foreground));
+}
+
+/* Cursor for interactive elements */
+button,
+[role="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+a,
+label,
+[onclick],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-muted-foreground));
+}
+
+/* Link underline effect */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
+/* Accent color utility classes for Tailwind v4 compatibility */
+.bg-accent {
+  background-color: rgb(201, 169, 98);
+}
+
+.bg-accent\/10 {
+  background-color: rgba(201, 169, 98, 0.1);
+}
+
+.bg-accent\/20 {
+  background-color: rgba(201, 169, 98, 0.2);
+}
+
+.text-accent {
+  color: rgb(201, 169, 98);
+}
+
+.hover\:bg-accent\/90:hover {
+  background-color: rgba(201, 169, 98, 0.9);
+}
+
+.hover\:text-accent:hover {
+  color: rgb(201, 169, 98);
+}
+
+.border-accent {
+  border-color: rgb(201, 169, 98);
+}
+
+.focus\:border-accent:focus {
+  border-color: rgb(201, 169, 98);
+}
