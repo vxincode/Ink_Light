@@ -24,64 +24,37 @@ export function Header() {
 
   // 防止滚动
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
-    }
-    return () => {
-      document.body.style.overflow = ""
-    }
+    document.body.style.overflow = isOpen ? "hidden" : ""
+    return () => { document.body.style.overflow = "" }
   }, [isOpen])
 
   return (
     <>
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          backgroundColor: "var(--background)",
-          borderBottom: "1px solid var(--border)"
-        }}
-      >
-        <div style={{
-          padding: "0 1.5rem",
-          maxWidth: "42rem",
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: "4rem"
-        }}>
-          <Link
-            href="/"
-            style={{
-              fontSize: "1.125rem",
-              fontWeight: 500,
-              letterSpacing: "-0.025em"
-            }}
-          >
+      <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
+        <div className="px-6 max-w-2xl mx-auto flex items-center justify-between h-16">
+          <Link href="/" className="text-lg font-medium text-black dark:text-white">
             {settings.siteName}
           </Link>
 
-          {/* Desktop Nav */}
-          <nav style={{ display: "none" }} className="md:flex md:items-center md:gap-8">
+          {/* Desktop */}
+          <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                style={{
-                  fontSize: "0.875rem",
-                  color: pathname?.startsWith(item.href) ? "var(--foreground)" : "var(--muted-foreground)"
-                }}
+                className={cn(
+                  "text-sm transition-colors",
+                  pathname?.startsWith(item.href)
+                    ? "text-black dark:text-white"
+                    : "text-gray-500 hover:text-black dark:text-zinc-400 dark:hover:text-white"
+                )}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div style={{ display: "none" }} className="md:flex md:items-center md:gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/dashboard">管理</Link>
@@ -89,100 +62,53 @@ export function Header() {
           </div>
 
           {/* Mobile Button */}
-          <div style={{ display: "flex" }} className="md:hidden items-center gap-2">
+          <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(true)}
-              style={{
-                width: "2.25rem",
-                height: "2.25rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer"
-              }}
+              className="w-9 h-9 flex items-center justify-center"
             >
-              <Menu style={{ width: "1.25rem", height: "1.25rem" }} />
+              <Menu className="w-5 h-5 text-black dark:text-white" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile Menu Overlay */}
       {isOpen && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            display: "flex"
-          }}
-          className="md:hidden"
+          className="fixed inset-0 z-[100] md:hidden"
+          onClick={() => setIsOpen(false)}
         >
-          {/* Backdrop */}
+          {/* Menu Panel - 点击阻止关闭 */}
           <div
-            onClick={() => setIsOpen(false)}
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0, 0, 0, 0.4)"
-            }}
-          />
-
-          {/* Menu */}
-          <div
-            style={{
-              width: "16rem",
-              backgroundColor: "var(--background)",
-              borderLeft: "1px solid var(--border)",
-              display: "flex",
-              flexDirection: "column"
-            }}
+            className="absolute right-0 top-0 h-full w-64 bg-white dark:bg-zinc-900 border-l border-gray-200 dark:border-zinc-700 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              height: "4rem",
-              padding: "0 1rem",
-              borderBottom: "1px solid var(--border)"
-            }}>
-              <span style={{ fontWeight: 500 }}>菜单</span>
+            <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-zinc-700">
+              <span className="font-medium text-black dark:text-white">菜单</span>
               <button
                 onClick={() => setIsOpen(false)}
-                style={{
-                  width: "2rem",
-                  height: "2rem",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer"
-                }}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
               >
-                <X style={{ width: "1.25rem", height: "1.25rem" }} />
+                <X className="w-5 h-5 text-black dark:text-white" />
               </button>
             </div>
 
-            {/* Links */}
-            <nav style={{ flex: 1, padding: "0.5rem" }}>
+            {/* Navigation */}
+            <nav className="p-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  style={{
-                    display: "block",
-                    padding: "0.75rem 1rem",
-                    fontSize: "0.9375rem",
-                    borderRadius: "0.5rem",
-                    color: pathname?.startsWith(item.href) ? "var(--foreground)" : "var(--muted-foreground)",
-                    backgroundColor: pathname?.startsWith(item.href) ? "var(--muted)" : "transparent",
-                    fontWeight: pathname?.startsWith(item.href) ? 500 : 400
-                  }}
+                  className={cn(
+                    "block px-4 py-3 rounded-lg text-[15px] transition-colors",
+                    pathname?.startsWith(item.href)
+                      ? "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white font-medium"
+                      : "text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+                  )}
                 >
                   {item.label}
                 </Link>
@@ -190,16 +116,11 @@ export function Header() {
             </nav>
 
             {/* Footer */}
-            <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-zinc-700">
               <Link
                 href="/admin/dashboard"
                 onClick={() => setIsOpen(false)}
-                style={{
-                  display: "block",
-                  padding: "0.5rem 1rem",
-                  fontSize: "0.875rem",
-                  color: "var(--muted-foreground)"
-                }}
+                className="block px-4 py-2 text-sm text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white"
               >
                 进入后台
               </Link>
