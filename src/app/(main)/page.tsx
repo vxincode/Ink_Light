@@ -161,7 +161,7 @@ export default function Home() {
                 <Link
                   key={album.id}
                   href={`/albums/${album.id}`}
-                  className="group relative aspect-[4/3] bg-muted overflow-hidden"
+                  className="group block relative aspect-[4/3] bg-muted overflow-hidden rounded-lg"
                 >
                   {album.coverImage ? (
                     <img
@@ -170,13 +170,13 @@ export default function Home() {
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
                       <span className="text-4xl text-muted-foreground/30">📷</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent">
-                    <span className="text-xs text-white/70">{album.photoCount} 张照片</span>
-                    <h3 className="font-display text-lg text-white font-medium">{album.title}</h3>
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
+                    <h3 className="font-medium text-sm text-white truncate">{album.title}</h3>
+                    <span className="text-xs text-white/70">{album.photoCount} 张</span>
                   </div>
                 </Link>
               ))
