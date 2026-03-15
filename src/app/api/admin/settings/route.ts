@@ -21,9 +21,13 @@ export async function GET() {
       seoKeywords: "",
       githubUrl: "",
       twitterUrl: "",
+      weiboUrl: "",
       email: "",
+      footerText: "",
+      icpNumber: "",
+      policeNumber: "",
       allowComments: true,
-      allowRegister: false,
+      postsPerPage: 10,
     })
   } catch (error) {
     console.error("Error fetching settings:", error)
@@ -43,37 +47,36 @@ export async function PUT(request: NextRequest) {
 
     const existing = await db.select().from(siteSettings).limit(1)
 
+    const updateData = {
+      siteName: body.siteName?.trim() || "我的博客",
+      siteDescription: body.siteDescription?.trim() || null,
+      siteAvatar: body.siteAvatar?.trim() || null,
+      seoKeywords: body.seoKeywords?.trim() || null,
+      githubUrl: body.githubUrl?.trim() || null,
+      twitterUrl: body.twitterUrl?.trim() || null,
+      weiboUrl: body.weiboUrl?.trim() || null,
+      email: body.email?.trim() || null,
+      footerText: body.footerText?.trim() || null,
+      icpNumber: body.icpNumber?.trim() || null,
+      policeNumber: body.policeNumber?.trim() || null,
+      allowComments: body.allowComments ?? true,
+      postsPerPage: Math.min(50, Math.max(5, body.postsPerPage || 10)),
+      updatedAt: new Date(),
+    }
+
     let settings
     if (existing[0]) {
       settings = await db
         .update(siteSettings)
-        .set({
-          siteName: body.siteName?.trim() || "我的博客",
-          siteDescription: body.siteDescription?.trim() || null,
-          siteAvatar: body.siteAvatar?.trim() || null,
-          seoKeywords: body.seoKeywords?.trim() || null,
-          githubUrl: body.githubUrl?.trim() || null,
-          twitterUrl: body.twitterUrl?.trim() || null,
-          email: body.email?.trim() || null,
-          allowComments: body.allowComments ?? true,
-          allowRegister: body.allowRegister ?? false,
-          updatedAt: new Date()
-        })
+        .set(updateData)
         .where(eq(siteSettings.id, existing[0].id))
         .returning()
     } else {
       settings = await db
         .insert(siteSettings)
         .values({
-          siteName: body.siteName?.trim() || "我的博客",
-          siteDescription: body.siteDescription?.trim() || null,
-          siteAvatar: body.siteAvatar?.trim() || null,
-          seoKeywords: body.seoKeywords?.trim() || null,
-          githubUrl: body.githubUrl?.trim() || null,
-          twitterUrl: body.twitterUrl?.trim() || null,
-          email: body.email?.trim() || null,
-          allowComments: body.allowComments ?? true,
-          allowRegister: body.allowRegister ?? false
+          ...updateData,
+          allowRegister: false,
         })
         .returning()
     }

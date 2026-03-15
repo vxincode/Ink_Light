@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Plus, GripVertical, Trash2, Check, Image, Loader2 } from "lucide-react"
+import { ArrowLeft, Plus, GripVertical, Trash2, Check, Image, Loader2, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Photo {
@@ -17,13 +17,15 @@ interface Photo {
 
 export default function AlbumPhotosPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [albumId, setAlbumId] = useState<string>("")
   const [album, setAlbum] = useState<{ id: string; title: string } | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [newPhotoUrl, setNewPhotoUrl] = useState("")
   const [newPhotoCaption, setNewPhotoCaption] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [message, setMessage] = useState("")
   const [messageType, setMessageType] = useState<"success" | "error">("success")
 
@@ -112,6 +114,87 @@ export default function AlbumPhotosPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  // 处理本地上传图片
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 验证文件类型
+    if (!file.type.startsWith("image/")) {
+      setMessage("请选择图片文件")
+      setMessageType("error")
+      return
+    }
+
+    // 验证文件大小 (最大 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("文件大小不能超过 5MB")
+      setMessageType("error")
+      return
+    }
+
+    setIsUploading(true)
+    setMessage("")
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.data?.url) {
+        // 自动填充 URL 并添加照片
+        const imageUrl = result.data.url
+
+        // 直接添加照片
+        const addResponse = await fetch(`/api/albums/${albumId}/photos`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            photos: [
+              {
+                url: imageUrl,
+                caption: newPhotoCaption.trim() || null,
+              },
+            ],
+          }),
+        })
+
+        const addResult = await addResponse.json()
+
+        if (addResult.success && addResult.data) {
+          setPhotos((prev) => [...prev, ...addResult.data])
+          setNewPhotoCaption("")
+          setMessage("照片上传成功!")
+          setMessageType("success")
+        } else {
+          setMessage(addResult.error || "添加照片失败")
+          setMessageType("error")
+        }
+      } else {
+        setMessage(result.error || "上传失败")
+        setMessageType("error")
+      }
+    } catch (error) {
+      console.error("Error uploading photo:", error)
+      setMessage("上传失败，请重试")
+      setMessageType("error")
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+      setTimeout(() => setMessage(""), 3000)
+    }
+  }
+
   const handleRemovePhoto = async (photoId: string) => {
     if (!confirm("确定要删除这张照片吗？")) {
       return
@@ -196,32 +279,64 @@ export default function AlbumPhotosPage({ params }: { params: Promise<{ id: stri
           <Plus className="w-3.5 h-3.5" />
           添加新照片
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={newPhotoUrl}
-            onChange={(e) => setNewPhotoUrl(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault()
-                handleAddPhoto()
-              }
-            }}
-            placeholder="图片 URL..."
-            className="h-8 flex-1 text-xs bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
-          />
-          <Input
-            value={newPhotoCaption}
-            onChange={(e) => setNewPhotoCaption(e.target.value)}
-            placeholder="说明（可选）"
-            className="h-8 w-32 text-xs bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
-          />
-          <Button
-            onClick={handleAddPhoto}
-            disabled={!newPhotoUrl.trim() || isAdding}
-            className="h-8 px-3 text-xs bg-accent hover:bg-accent/90 text-white rounded"
-          >
-            {isAdding ? "添加中..." : "添加"}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              value={newPhotoUrl}
+              onChange={(e) => setNewPhotoUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  handleAddPhoto()
+                }
+              }}
+              placeholder="图片 URL..."
+              className="h-8 flex-1 text-xs bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+            />
+            <Input
+              value={newPhotoCaption}
+              onChange={(e) => setNewPhotoCaption(e.target.value)}
+              placeholder="说明（可选）"
+              className="h-8 w-32 text-xs bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+            />
+            <Button
+              onClick={handleAddPhoto}
+              disabled={!newPhotoUrl.trim() || isAdding}
+              className="h-8 px-3 text-xs bg-accent hover:bg-accent/90 text-white rounded"
+            >
+              {isAdding ? "添加中..." : "添加"}
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-[#787672]">
+            <span>或</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="h-7 px-2 text-[10px] border-[#e4e1db] hover:border-accent"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  上传中...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-3 h-3 mr-1" />
+                  本地上传
+                </>
+              )}
+            </Button>
+            <span>支持 JPG、PNG、GIF、WebP，最大 5MB</span>
+          </div>
         </div>
       </div>
 

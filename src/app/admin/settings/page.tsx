@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { Save, Loader2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -15,9 +16,13 @@ interface Settings {
   seoKeywords: string
   githubUrl: string
   twitterUrl: string
+  weiboUrl: string
   email: string
+  footerText: string
+  icpNumber: string
+  policeNumber: string
   allowComments: boolean
-  allowRegister: boolean
+  postsPerPage: number
 }
 
 export default function AdminSettingsPage() {
@@ -33,9 +38,13 @@ export default function AdminSettingsPage() {
     seoKeywords: "",
     githubUrl: "",
     twitterUrl: "",
+    weiboUrl: "",
     email: "",
+    footerText: "",
+    icpNumber: "",
+    policeNumber: "",
     allowComments: true,
-    allowRegister: false,
+    postsPerPage: 10,
   })
 
   // 加载设置
@@ -52,9 +61,13 @@ export default function AdminSettingsPage() {
             seoKeywords: data.data.seoKeywords || "",
             githubUrl: data.data.githubUrl || "",
             twitterUrl: data.data.twitterUrl || "",
+            weiboUrl: data.data.weiboUrl || "",
             email: data.data.email || "",
+            footerText: data.data.footerText || "",
+            icpNumber: data.data.icpNumber || "",
+            policeNumber: data.data.policeNumber || "",
             allowComments: data.data.allowComments ?? true,
-            allowRegister: data.data.allowRegister ?? false,
+            postsPerPage: data.data.postsPerPage || 10,
           })
         }
       })
@@ -71,8 +84,11 @@ export default function AdminSettingsPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target
-    setSettings((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type } = e.target
+    setSettings((prev) => ({
+      ...prev,
+      [name]: type === "number" ? parseInt(value) || 0 : value,
+    }))
   }
 
   const handleToggle = (name: keyof Settings) => {
@@ -153,14 +169,14 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      {/* Form */}
+      {/* Basic Info */}
       <div className="bg-white border border-[#e4e1db] rounded-lg shadow-sm">
         <div className="px-4 py-3 border-b border-[#e4e1db] text-xs font-medium text-[#555]">
           基本信息
         </div>
         <div className="p-4 space-y-4">
           <div>
-            <label className="text-xs text-[#666] mb-1.5 block">网站名称</label>
+            <label className="text-xs text-[#666] mb-1.5 block">网站名称 *</label>
             <Input
               name="siteName"
               value={settings.siteName}
@@ -181,13 +197,11 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-[#666] mb-1.5 block">网站头像</label>
-            <Input
-              name="siteAvatar"
+            <label className="text-xs text-[#666] mb-1.5 block">网站头像/Logo</label>
+            <ImageUpload
               value={settings.siteAvatar}
-              onChange={handleChange}
-              placeholder="https://example.com/avatar.jpg"
-              className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+              onChange={(url) => setSettings((prev) => ({ ...prev, siteAvatar: url }))}
+              onRemove={() => setSettings((prev) => ({ ...prev, siteAvatar: "" }))}
             />
           </div>
           <div>
@@ -199,11 +213,12 @@ export default function AdminSettingsPage() {
               placeholder="博客, 生活, 旅行, 摄影"
               className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
             />
+            <p className="text-[10px] text-[#555] mt-1">多个关键词用英文逗号分隔</p>
           </div>
         </div>
       </div>
 
-      {/* Social */}
+      {/* Social Links */}
       <div className="bg-white border border-[#e4e1db] rounded-lg shadow-sm">
         <div className="px-4 py-3 border-b border-[#e4e1db] text-xs font-medium text-[#555]">
           社交链接
@@ -220,12 +235,22 @@ export default function AdminSettingsPage() {
             />
           </div>
           <div>
-            <label className="text-xs text-[#666] mb-1.5 block">Twitter</label>
+            <label className="text-xs text-[#666] mb-1.5 block">Twitter / X</label>
             <Input
               name="twitterUrl"
               value={settings.twitterUrl}
               onChange={handleChange}
               placeholder="https://twitter.com/username"
+              className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-[#666] mb-1.5 block">微博</label>
+            <Input
+              name="weiboUrl"
+              value={settings.weiboUrl}
+              onChange={handleChange}
+              placeholder="https://weibo.com/username"
               className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
             />
           </div>
@@ -243,10 +268,10 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      {/* Comments */}
+      {/* Site Settings */}
       <div className="bg-white border border-[#e4e1db] rounded-lg shadow-sm">
         <div className="px-4 py-3 border-b border-[#e4e1db] text-xs font-medium text-[#555]">
-          评论设置
+          站点设置
         </div>
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
@@ -259,17 +284,79 @@ export default function AdminSettingsPage() {
               onCheckedChange={() => handleToggle("allowComments")}
             />
           </div>
-          <div className="flex items-center justify-between mt-4">
-            <div>
-              <p className="text-sm font-medium">允许注册</p>
-              <p className="text-[10px] text-[#555]">允许新用户注册账号</p>
-            </div>
-            <Switch
-              checked={settings.allowRegister}
-              onCheckedChange={() => handleToggle("allowRegister")}
+          <div>
+            <label className="text-xs text-[#666] mb-1.5 block">每页文章数</label>
+            <Input
+              name="postsPerPage"
+              type="number"
+              value={settings.postsPerPage}
+              onChange={handleChange}
+              min={5}
+              max={50}
+              className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent w-24"
             />
+            <p className="text-[10px] text-[#555] mt-1">文章列表每页显示的文章数量（5-50）</p>
           </div>
         </div>
+      </div>
+
+      {/* Footer & Legal */}
+      <div className="bg-white border border-[#e4e1db] rounded-lg shadow-sm">
+        <div className="px-4 py-3 border-b border-[#e4e1db] text-xs font-medium text-[#555]">
+          页脚与备案
+        </div>
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="text-xs text-[#666] mb-1.5 block">页脚文字</label>
+            <Textarea
+              name="footerText"
+              value={settings.footerText}
+              onChange={handleChange}
+              placeholder="© 2024 我的博客. All rights reserved."
+              rows={2}
+              className="text-xs bg-white border-[#e4e1db] focus:border-accent resize-none placeholder:text-[#404040]"
+            />
+            <p className="text-[10px] text-[#555] mt-1">支持 HTML，显示在网站底部</p>
+          </div>
+          <div>
+            <label className="text-xs text-[#666] mb-1.5 block">ICP 备案号</label>
+            <Input
+              name="icpNumber"
+              value={settings.icpNumber}
+              onChange={handleChange}
+              placeholder="京ICP备xxxxxxxx号"
+              className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+            />
+            <p className="text-[10px] text-[#555] mt-1">工信部备案号，将显示在页脚</p>
+          </div>
+          <div>
+            <label className="text-xs text-[#666] mb-1.5 block">公安备案号</label>
+            <Input
+              name="policeNumber"
+              value={settings.policeNumber}
+              onChange={handleChange}
+              placeholder="京公网安备 xxxxxxxxxxx号"
+              className="h-9 text-sm bg-white border-[#e4e1db] focus:border-accent placeholder:text-[#404040]"
+            />
+            <p className="text-[10px] text-[#555] mt-1">公安部备案号，将显示在页脚</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="h-8 px-4 text-xs bg-accent hover:bg-accent/90 text-white rounded"
+        >
+          {isSaving ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4 mr-2" />
+          )}
+          {isSaving ? "保存中..." : "保存设置"}
+        </Button>
       </div>
     </div>
   )

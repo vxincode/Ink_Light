@@ -63,7 +63,8 @@ export default function NewAlbumPage() {
         setMessage("保存成功!")
         setMessageType("success")
         if (result.data?.id) {
-          router.push(`/admin/albums/${result.data.id}/edit`)
+          router.replace(`/admin/albums/${result.data.id}/edit`)
+          router.refresh()
         }
       } else {
         setMessage(result.error || "保存失败")

@@ -145,7 +145,10 @@ export default function PostEditor({ postId }: PostEditorProps) {
 
         // 新建文章时重定向到编辑页面
         if (isNew && result.data?.id) {
-          router.push(`/admin/posts/${result.data.id}/edit`)
+          // 使用 replace 避免历史记录中出现 "new" 页面
+          router.replace(`/admin/posts/${result.data.id}/edit`)
+          // 刷新页面以更新服务端组件状态
+          router.refresh()
         }
       } else {
         setMessage(result.error || "保存失败")

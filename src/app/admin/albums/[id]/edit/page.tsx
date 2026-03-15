@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 export default function AlbumEditPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [id, setId] = useState<string>("")
+  const [paramsLoaded, setParamsLoaded] = useState(false)
   const isNew = id === "new"
   const [isLoading, setIsLoading] = useState(false)
 
@@ -31,12 +32,13 @@ export default function AlbumEditPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     params.then((p) => {
       setId(p.id)
+      setParamsLoaded(true)
     })
   }, [params])
 
   // 加载现有相册数据
   useEffect(() => {
-    if (id && id !== "new") {
+    if (paramsLoaded && id && id !== "new") {
       setIsLoading(true)
       fetch(`/api/albums/${id}`)
         .then((res) => res.json())
@@ -60,7 +62,7 @@ export default function AlbumEditPage({ params }: { params: Promise<{ id: string
           setIsLoading(false)
         })
     }
-  }, [id])
+  }, [paramsLoaded, id])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -117,7 +119,8 @@ export default function AlbumEditPage({ params }: { params: Promise<{ id: string
 
         // 新建相册时重定向到编辑页面
         if (isNew && result.data?.id) {
-          router.push(`/admin/albums/${result.data.id}/edit`)
+          router.replace(`/admin/albums/${result.data.id}/edit`)
+          router.refresh()
         } else {
           setTimeout(() => router.push("/admin/albums"), 1000)
         }
@@ -132,6 +135,15 @@ export default function AlbumEditPage({ params }: { params: Promise<{ id: string
     } finally {
       setIsSaving(false)
     }
+  }
+
+  // 等待 params 加载
+  if (!paramsLoaded) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (

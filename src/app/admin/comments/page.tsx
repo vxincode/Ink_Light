@@ -22,6 +22,13 @@ export default function AdminCommentsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [message, setMessage] = useState("")
 
+  // 获取状态标签 - 必须在 filteredComments 之前定义
+  const getStatusLabel = (isApproved: boolean | null) => {
+    if (isApproved === null) return "待审核"
+    if (isApproved === true) return "已通过"
+    return "已拒绝"
+  }
+
   // 加载评论列表
   useEffect(() => {
     setIsLoading(true)
@@ -48,12 +55,6 @@ export default function AdminCommentsPage() {
     if (statusFilter === "rejected") return comment.isApproved === false
     return true
   })
-
-  const getStatusLabel = (isApproved: boolean | null) => {
-    if (isApproved === null) return "待审核"
-    if (isApproved === true) return "已通过"
-    return "已拒绝"
-  }
 
   const handleApprove = async (id: string) => {
     try {

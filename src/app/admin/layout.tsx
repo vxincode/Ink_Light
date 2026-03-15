@@ -103,7 +103,7 @@ export default function AdminLayout({
       {/* Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/20"
+          className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -111,7 +111,7 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-56 bg-white border-r border-[#e4e1db] flex flex-col transition-transform lg:translate-x-0 shadow-sm",
+          "fixed lg:static inset-y-0 left-0 z-50 w-56 bg-white border-r border-[#e4e1db] flex flex-col transition-transform lg:translate-x-0 shadow-lg",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

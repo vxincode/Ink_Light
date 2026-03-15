@@ -144,9 +144,14 @@ export const siteSettings = pgTable('site_settings', {
   seoKeywords: varchar('seo_keywords', { length: 255 }),
   githubUrl: varchar('github_url', { length: 255 }),
   twitterUrl: varchar('twitter_url', { length: 255 }),
+  weiboUrl: varchar('weibo_url', { length: 255 }),
   email: varchar('email', { length: 255 }),
+  footerText: text('footer_text'),
+  icpNumber: varchar('icp_number', { length: 100 }),
+  policeNumber: varchar('police_number', { length: 100 }),
   allowComments: boolean('allow_comments').default(true).notNull(),
   allowRegister: boolean('allow_register').default(false).notNull(),
+  postsPerPage: integer('posts_per_page').default(10).notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
