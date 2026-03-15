@@ -129,13 +129,16 @@ NEXTAUTH_SECRET=$(openssl rand -base64 32 2>/dev/null || node -e "console.log(re
 # URL 编码密码
 ENCODED_PASSWORD=$(node -e "console.log(encodeURIComponent('$DB_PASSWORD'))")
 
+# 构建 DATABASE_URL
+DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
 # 创建 .env 文件
 echo ""
 echo "⚙️  生成配置文件..."
 
 cat > .env << EOF
 # 数据库配置
-DATABASE_URL="postgresql://${DB_USER}:${ENCODED_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+DATABASE_URL="${DATABASE_URL}"
 
 # NextAuth 配置
 NEXTAUTH_URL="${SITE_URL}"
@@ -143,6 +146,8 @@ NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
 EOF
 
 echo -e "${GREEN}✅ .env 文件已创建${NC}"
+echo ""
+echo "数据库连接字符串: postgresql://${DB_USER}:****@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
 # 安装依赖
 echo ""
@@ -152,42 +157,29 @@ if [ "$install_deps" != "n" ]; then
     npm install
 fi
 
-# 测试数据库连接
-echo ""
-echo "🔍 测试数据库连接..."
-
-DB_TEST_RESULT=$(node -e "
-const postgres = require('postgres');
-const sql = postgres(process.env.DATABASE_URL, { connect_timeout: 5 });
-sql\`SELECT 1 as test\`
-  .then(() => { console.log('SUCCESS'); sql.end(); })
-  .catch((e) => { console.log('FAILED:', e.message); process.exit(1); });
-" 2>&1)
-
-if echo "$DB_TEST_RESULT" | grep -q "SUCCESS"; then
-    echo -e "${GREEN}✅ 数据库连接成功${NC}"
-else
-    echo -e "${RED}❌ 数据库连接失败${NC}"
-    echo "   错误信息: $(echo "$DB_TEST_RESULT" | grep -o 'FAILED:.*' || echo '未知错误')"
-    echo ""
-    echo "   常见问题:"
-    echo "   1. 数据库用户不存在 - PostgreSQL 默认用户是 'postgres'"
-    echo "   2. 数据库未创建 - 需要先创建数据库: CREATE DATABASE $DB_NAME;"
-    echo "   3. 密码错误 - 检查数据库密码是否正确"
-    echo "   4. 连接被拒绝 - 检查数据库服务是否启动"
-    echo ""
-    read -p "是否继续? (y/N): " continue_setup
-    if [ "$continue_setup" != "y" ]; then
-        exit 1
-    fi
-fi
-
-# 数据库迁移
+# 数据库迁移 - 使用 --env-load 选项或直接设置环境变量
 echo ""
 echo "📦 运行数据库迁移..."
-npx drizzle-kit push || {
-    echo -e "${YELLOW}⚠️  数据库迁移失败${NC}"
-    echo "   你可以稍后手动运行: npx drizzle-kit push"
+
+# 直接传递 DATABASE_URL 给 drizzle-kit
+DATABASE_URL="$DATABASE_URL" npx drizzle-kit push --verbose 2>&1 || {
+    echo ""
+    echo -e "${RED}❌ 数据库迁移失败${NC}"
+    echo ""
+    echo "可能的原因:"
+    echo "  1. 数据库不存在 - 请先创建数据库:"
+    echo "     sudo -u postgres psql -c \"CREATE DATABASE ${DB_NAME};\""
+    echo ""
+    echo "  2. 用户不存在或密码错误 - 检查 PostgreSQL 用户配置"
+    echo ""
+    echo "  3. PostgreSQL 服务未启动 - 检查服务状态"
+    echo "     systemctl status postgresql"
+    echo ""
+    echo "  4. 连接被拒绝 - 检查 pg_hba.conf 配置"
+    echo ""
+    echo "手动迁移命令:"
+    echo "  DATABASE_URL=\"$DATABASE_URL\" npx drizzle-kit push"
+    echo ""
     read -p "是否继续? (y/N): " continue_setup
     if [ "$continue_setup" != "y" ]; then
         exit 1
@@ -199,7 +191,7 @@ echo ""
 echo "👤 创建管理员账户..."
 
 # 将变量导出到环境变量
-export ADMIN_EMAIL ADMIN_NAME ADMIN_PASSWORD SITE_NAME SITE_DESCRIPTION
+export ADMIN_EMAIL ADMIN_NAME ADMIN_PASSWORD SITE_NAME SITE_DESCRIPTION DATABASE_URL
 
 node -e "
 const postgres = require('postgres');
@@ -210,9 +202,10 @@ const ADMIN_NAME = process.env.ADMIN_NAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const SITE_NAME = process.env.SITE_NAME;
 const SITE_DESCRIPTION = process.env.SITE_DESCRIPTION;
+const DATABASE_URL = process.env.DATABASE_URL;
 
 async function init() {
-  const sql = postgres(process.env.DATABASE_URL);
+  const sql = postgres(DATABASE_URL);
 
   try {
     // 检查管理员是否存在
@@ -270,7 +263,7 @@ echo -e "${GREEN}🎉 初始化完成！${NC}"
 echo ""
 echo "📌 下一步操作:"
 echo "   启动服务: npm run start"
-echo "   或使用 PM2: pm2 start npm --name blog -- run start"
+echo "   或使用 PM2: pm2 start ecosystem.config.js"
 echo ""
 echo "🔐 登录信息:"
 echo "   地址: ${SITE_URL}/admin/login"
