@@ -79,16 +79,16 @@ export default function AlbumPage() {
       <div className="bg-white border-b border-[#e4e1db]">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
               <Link
                 href="/albums"
-                className="p-2 hover:bg-[#F5F3EF] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#F5F3EF] rounded-lg transition-colors shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <div>
-                <h1 className="text-lg font-medium">{album.title}</h1>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+              <div className="min-w-0">
+                <h1 className="text-base md:text-lg font-medium truncate">{album.title}</h1>
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs text-muted-foreground mt-1">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {formatDate(album.createdAt)}
@@ -105,7 +105,7 @@ export default function AlbumPage() {
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center gap-1 p-1 bg-[#F5F3EF] rounded-lg">
+            <div className="flex items-center gap-1 p-1 bg-[#F5F3EF] rounded-lg shrink-0 ml-2">
               <button
                 onClick={() => setViewMode("waterfall")}
                 className={cn(
