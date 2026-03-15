@@ -30,23 +30,27 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
+      {/* Header - 保持原有桌面端样式 */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="px-6 max-w-2xl mx-auto flex items-center justify-between h-16">
-          <Link href="/" className="text-lg font-medium text-black dark:text-white">
+          <Link
+            href="/"
+            className="font-display text-lg font-medium tracking-tight hover:text-accent transition-colors"
+          >
             {settings.siteName}
           </Link>
 
-          {/* Desktop */}
+          {/* Desktop - 保持原样 */}
           <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-sm transition-colors",
+                  "text-sm link-underline transition-colors",
                   pathname?.startsWith(item.href)
-                    ? "text-black dark:text-white"
-                    : "text-gray-500 hover:text-black dark:text-zinc-400 dark:hover:text-white"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {item.label}
@@ -56,25 +60,32 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="text-xs tracking-wide"
+            >
               <Link href="/admin/dashboard">管理</Link>
             </Button>
           </div>
 
-          {/* Mobile Button */}
+          {/* Mobile Button - 只显示按钮 */}
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
               onClick={() => setIsOpen(true)}
-              className="w-9 h-9 flex items-center justify-center"
             >
-              <Menu className="w-5 h-5 text-black dark:text-white" />
-            </button>
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu - 独立的移动端菜单，无透明遮罩 */}
       {isOpen && (
         <div
           className="fixed inset-0 z-[100] md:hidden"
