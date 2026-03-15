@@ -74,15 +74,15 @@ export default function AlbumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-[#e4e1db]">
+      <div className="bg-card border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
               <Link
                 href="/albums"
-                className="p-2 hover:bg-[#F5F3EF] rounded-lg transition-colors shrink-0"
+                className="p-2 hover:bg-muted rounded-lg transition-colors shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
@@ -105,12 +105,12 @@ export default function AlbumPage() {
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center gap-1 p-1 bg-[#F5F3EF] rounded-lg shrink-0 ml-2">
+            <div className="flex items-center gap-1 p-1 bg-muted rounded-lg shrink-0 ml-2">
               <button
                 onClick={() => setViewMode("waterfall")}
                 className={cn(
                   "p-1.5 rounded-md transition-colors",
-                  viewMode === "waterfall" ? "bg-white shadow-sm" : "hover:bg-white/50"
+                  viewMode === "waterfall" ? "bg-background shadow-sm" : "hover:bg-background/50"
                 )}
                 title="瀑布流"
               >
@@ -120,7 +120,7 @@ export default function AlbumPage() {
                 onClick={() => setViewMode("grid")}
                 className={cn(
                   "p-1.5 rounded-md transition-colors",
-                  viewMode === "grid" ? "bg-white shadow-sm" : "hover:bg-white/50"
+                  viewMode === "grid" ? "bg-background shadow-sm" : "hover:bg-background/50"
                 )}
                 title="网格"
               >
@@ -151,9 +151,7 @@ export default function AlbumPage() {
                 className="group relative break-inside-avoid cursor-pointer overflow-hidden rounded-lg"
                 onClick={() => setSelectedPhoto(photo)}
               >
-                <div
-                  className="bg-white border border-[#e4e1db] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-                >
+                <div className="bg-card border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   {photo.url ? (
                     <img
                       src={photo.url}
@@ -161,8 +159,8 @@ export default function AlbumPage() {
                       className="w-full h-auto object-cover"
                     />
                   ) : (
-                    <div className="w-full h-48 bg-[#F5F3EF] flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-[#d4d0c8]" />
+                    <div className="w-full h-48 bg-muted flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
                     </div>
                   )}
                 </div>
@@ -183,7 +181,7 @@ export default function AlbumPage() {
                 className="group relative cursor-pointer overflow-hidden rounded-lg"
                 onClick={() => setSelectedPhoto(photo)}
               >
-                <div className="aspect-square bg-white border border-[#e4e1db] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all hover:border-accent/50">
+                <div className="aspect-square bg-card border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all hover:border-accent/50">
                   {photo.url ? (
                     <img
                       src={photo.url}
@@ -191,8 +189,8 @@ export default function AlbumPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#F5F3EF] flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-[#d4d0c8]" />
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
                     </div>
                   )}
                 </div>
@@ -231,9 +229,9 @@ export default function AlbumPage() {
                 className="max-w-full max-h-[80vh] mx-auto object-contain rounded-lg"
               />
             ) : (
-              <div className="bg-white border border-[#e4e1db] rounded-lg overflow-hidden shadow-2xl">
-                <div className="aspect-video bg-[#F5F3EF] flex items-center justify-center">
-                  <ImageIcon className="h-20 w-20 text-[#d4d0c8]" />
+              <div className="bg-card border rounded-lg overflow-hidden shadow-2xl">
+                <div className="aspect-video bg-muted flex items-center justify-center">
+                  <ImageIcon className="h-20 w-20 text-muted-foreground/50" />
                 </div>
               </div>
             )}
