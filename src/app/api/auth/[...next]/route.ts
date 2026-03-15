@@ -26,6 +26,7 @@ declare module "next-auth" {
 // JWT types are handled internally by next-auth
 
 const nextAuth = NextAuth({
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: "Credentials",
