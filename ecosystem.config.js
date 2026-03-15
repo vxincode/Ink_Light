@@ -2,12 +2,13 @@
  * PM2 生态系统配置文件
  * 用于宝塔面板 PM2 管理器部署
  *
- * 部署步骤:
- * 1. cd /www/wwwroot/Ink_Light
- * 2. npm install
- * 3. npm run build   <-- 必须先构建
- * 4. pm2 start ecosystem.config.js
- * 5. pm2 save
+ * 宝塔面板配置步骤:
+ * 1. 软件商店 -> PM2管理器 -> 设置
+ * 2. 添加项目 -> 选择项目目录
+ * 3. 启动文件: ecosystem.config.js
+ * 4. 项目名称: ink-light-blog
+ * 5. 端口: 3000
+ * 6. 提交
  */
 
 module.exports = {
@@ -24,7 +25,7 @@ module.exports = {
         PORT: 3000,
       },
 
-      // 实例数量 (根据服务器配置调整，建议设为 CPU 核心数或 1)
+      // 实例数量
       instances: 1,
 
       // 执行模式
@@ -48,7 +49,6 @@ module.exports = {
       // 启动超时
       listen_timeout: 30000,
       kill_timeout: 5000,
-
     }
   ]
 }
