@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowUpRight, Loader2, Plus } from "lucide-react"
 import { useIsAdmin } from "@/hooks/use-admin"
+import { Pagination } from "@/components/ui/pagination"
 
 interface Post {
   id: string
@@ -12,25 +13,50 @@ interface Post {
   createdAt: string
 }
 
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasMore: boolean
+}
+
 export default function TravelPage() {
   const [travels, setTravels] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasMore: false,
+  })
   const { isAdmin } = useIsAdmin()
 
-  useEffect(() => {
+  const fetchTravels = async (page: number) => {
     setIsLoading(true)
-    fetch("/api/posts?category=TRAVEL&limit=50")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setTravels(data.data)
-        }
-      })
-      .catch(console.error)
-      .finally(() => {
-        setIsLoading(false)
-      })
+    try {
+      const res = await fetch(`/api/posts?category=TRAVEL&page=${page}&limit=10`)
+      const data = await res.json()
+      if (data.success && data.data) {
+        setTravels(data.data)
+        setPagination(data.pagination)
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTravels(1)
   }, [])
+
+  const handlePageChange = (page: number) => {
+    fetchTravels(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -79,26 +105,42 @@ export default function TravelPage() {
           ) : travels.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">暂无游记</div>
           ) : (
-            <div className="space-y-12">
-              {travels.map((trip) => (
-                <article key={trip.id} className="group">
-                  <Link href={`/posts/${trip.id}`} className="block">
-                    <h2 className="font-display text-xl md:text-2xl font-medium mb-2 group-hover:text-accent transition-colors duration-300">
-                      {trip.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-2">
-                      {trip.excerpt}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground font-mono">{formatDate(trip.createdAt)}</span>
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground group-hover:text-accent transition-colors">
-                        查看详情 <ArrowUpRight className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </Link>
-                </article>
-              ))}
-            </div>
+            <>
+              <div className="space-y-12">
+                {travels.map((trip) => (
+                  <article key={trip.id} className="group">
+                    <Link href={`/posts/${trip.id}`} className="block">
+                      <h2 className="font-display text-xl md:text-2xl font-medium mb-2 group-hover:text-accent transition-colors duration-300">
+                        {trip.title}
+                      </h2>
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-2">
+                        {trip.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground font-mono">{formatDate(trip.createdAt)}</span>
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground group-hover:text-accent transition-colors">
+                          查看详情 <ArrowUpRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
+                <div className="mt-12 pt-8 border-t">
+                  <Pagination
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                  <p className="text-center text-xs text-muted-foreground mt-4">
+                    共 {pagination.total} 篇游记
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

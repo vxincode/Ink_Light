@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
 import { posts, tags, postTags, type PostCategory, type PostStatus } from "@/db/schema"
-import { eq, and, desc, inArray } from "drizzle-orm"
+import { eq, and, desc, inArray, sql, count } from "drizzle-orm"
 import { requireAdmin } from "@/lib/auth"
 
 // GET /api/posts - 获取文章列表
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const tagSlug = searchParams.get("tag")
     const statusParam = searchParams.get("status")
     const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "50")
+    const limit = parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
 
     // 构建查询条件
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({
             success: true,
             data: [],
-            pagination: { page, limit, total: 0 },
+            pagination: { page, limit, total: 0, totalPages: 0 },
           })
         }
       } else {
@@ -57,30 +57,32 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: true,
           data: [],
-          pagination: { page, limit, total: 0 },
+          pagination: { page, limit, total: 0, totalPages: 0 },
         })
       }
     }
 
+    // 查询总数
+    const whereClause = postIdsByTag
+      ? and(...conditions, inArray(posts.id, postIdsByTag))
+      : (conditions.length > 0 ? and(...conditions) : undefined)
+
+    const totalResult = await db
+      .select({ count: count() })
+      .from(posts)
+      .where(whereClause)
+
+    const total = totalResult[0]?.count || 0
+    const totalPages = Math.ceil(total / limit)
+
     // 执行查询
-    let postList
-    if (postIdsByTag) {
-      postList = await db
-        .select()
-        .from(posts)
-        .where(and(...conditions, inArray(posts.id, postIdsByTag)))
-        .orderBy(desc(posts.createdAt))
-        .limit(limit)
-        .offset(offset)
-    } else {
-      postList = await db
-        .select()
-        .from(posts)
-        .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(desc(posts.createdAt))
-        .limit(limit)
-        .offset(offset)
-    }
+    const postList = await db
+      .select()
+      .from(posts)
+      .where(whereClause)
+      .orderBy(desc(posts.createdAt))
+      .limit(limit)
+      .offset(offset)
 
     return NextResponse.json({
       success: true,
@@ -88,7 +90,9 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: postList.length,
+        total,
+        totalPages,
+        hasMore: page < totalPages,
       },
     })
   } catch (error) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowUpRight, Loader2, Plus } from "lucide-react"
 import { useIsAdmin } from "@/hooks/use-admin"
+import { Pagination } from "@/components/ui/pagination"
 
 interface Post {
   id: string
@@ -12,23 +13,50 @@ interface Post {
   createdAt: string
 }
 
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasMore: boolean
+}
+
 export default function EssaysPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasMore: false,
+  })
   const { isAdmin } = useIsAdmin()
 
-  useEffect(() => {
+  const fetchPosts = async (page: number) => {
     setIsLoading(true)
-    fetch("/api/posts?category=ESSAY&limit=50")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setPosts(data.data)
-        }
-      })
-      .catch(console.error)
-      .finally(() => setIsLoading(false))
+    try {
+      const res = await fetch(`/api/posts?category=ESSAY&page=${page}&limit=10`)
+      const data = await res.json()
+      if (data.success && data.data) {
+        setPosts(data.data)
+        setPagination(data.pagination)
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPosts(1)
   }, [])
+
+  const handlePageChange = (page: number) => {
+    fetchPosts(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -77,25 +105,41 @@ export default function EssaysPage() {
           ) : posts.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-12">暂无文章</p>
           ) : (
-            <div className="space-y-10">
+            <>
               {posts.map((post) => (
                 <article key={post.id} className="group">
-                  <Link href={`/posts/${post.id}`} className="block">
+                  <Link href={`/posts/${post.id}`} className="block py-6 border-b last:border-b-0">
                     <div className="flex items-baseline gap-3 mb-2">
                       <span className="text-xs text-muted-foreground font-mono">{formatDate(post.createdAt)}</span>
                     </div>
                     <h2 className="font-display text-xl md:text-2xl font-medium mb-2 group-hover:text-accent transition-colors duration-300">
                       {post.title}
                     </h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                      {post.excerpt}
-                    </p>
+                    {post.excerpt && (
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                        {post.excerpt}
+                      </p>
+                    )}
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-3 group-hover:text-accent transition-colors">
                       阅读全文 <ArrowUpRight className="w-3 h-3" />
                     </span>
                   </Link>
                 </article>
               ))}
+            </>
+          )}
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-8 pt-8 border-t">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
+              />
+              <p className="text-center text-xs text-muted-foreground mt-4">
+                共 {pagination.total} 篇文章
+              </p>
             </div>
           )}
         </div>
