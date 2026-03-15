@@ -163,30 +163,20 @@ export default function Home() {
                   href={`/albums/${album.id}`}
                   className="group relative aspect-[4/3] bg-muted overflow-hidden"
                 >
-                  {album.coverImage && (
+                  {album.coverImage ? (
                     <img
                       src={album.coverImage}
                       alt={album.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-4xl text-muted-foreground/30">📷</span>
+                    </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute inset-0 flex flex-col justify-end p-4">
-                    <span className="text-xs text-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75">
-                      {album.photoCount} 张照片
-                    </span>
-                    <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-display text-lg text-white font-medium">{album.title}</h3>
-                      {album.description && (
-                        <p className="text-sm text-white/80">{album.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center group-hover:opacity-0 transition-opacity duration-300">
-                    <div className="text-center">
-                      <span className="font-display text-lg font-medium">{album.title}</span>
-                      <p className="text-xs text-muted-foreground">{album.photoCount} 张</p>
-                    </div>
+                  <div className="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/60 to-transparent">
+                    <span className="text-xs text-white/70">{album.photoCount} 张照片</span>
+                    <h3 className="font-display text-lg text-white font-medium">{album.title}</h3>
                   </div>
                 </Link>
               ))
