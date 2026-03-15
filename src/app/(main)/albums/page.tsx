@@ -63,25 +63,24 @@ export default function AlbumsPage() {
                 <Link
                   key={album.id}
                   href={`/albums/${album.id}`}
-                  className="group relative overflow-hidden rounded-lg aspect-[4/3]"
+                  className="group block relative overflow-hidden rounded-lg aspect-[4/3] bg-muted"
                 >
                   {album.coverImage ? (
                     <img
                       src={album.coverImage}
                       alt={album.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <div className="absolute inset-0 w-full h-full flex items-center justify-center">
                       <span className="text-4xl text-muted-foreground/30">📷</span>
                     </div>
                   )}
-                  {/* 底部白色文字覆盖层 */}
-                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-                    <h3 className="font-medium text-sm text-white truncate">{album.title}</h3>
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent">
+                    <h3 className="font-medium text-sm text-white truncate drop-shadow-sm">{album.title}</h3>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-white/70">{album.photoCount} 张</span>
-                      <ArrowUpRight className="w-3 h-3 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="text-xs text-white/80">{album.photoCount} 张</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-white/70 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 </Link>
