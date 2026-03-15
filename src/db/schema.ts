@@ -77,6 +77,7 @@ export const albums = pgTable('albums', {
   coverImage: varchar('cover_image', { length: 500 }),
   order: integer('order').default(0).notNull(),
   isPublic: boolean('is_public').default(true).notNull(),
+  views: integer('views').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   authorId: uuid('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
