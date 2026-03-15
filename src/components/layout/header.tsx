@@ -6,7 +6,7 @@ import { ThemeToggle } from "./theme-toggle"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSettings } from "@/hooks/use-settings"
 
 const navItems = [
@@ -22,111 +22,184 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const { settings } = useSettings()
 
+  // 防止滚动
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isOpen])
+
   return (
     <>
-      <header className="sticky top-0 z-50 bg-background border-b">
-        <div className="px-6 max-w-2xl mx-auto flex items-center justify-between h-16">
+      <header
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          backgroundColor: "var(--background)",
+          borderBottom: "1px solid var(--border)"
+        }}
+      >
+        <div style={{
+          padding: "0 1.5rem",
+          maxWidth: "42rem",
+          margin: "0 auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: "4rem"
+        }}>
           <Link
             href="/"
-            className="font-display text-lg font-medium tracking-tight hover:text-accent transition-colors"
+            style={{
+              fontSize: "1.125rem",
+              fontWeight: 500,
+              letterSpacing: "-0.025em"
+            }}
           >
             {settings.siteName}
           </Link>
 
-          {/* Desktop */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* Desktop Nav */}
+          <nav style={{ display: "none" }} className="md:flex md:items-center md:gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  "text-sm link-underline transition-colors",
-                  pathname?.startsWith(item.href)
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
+                style={{
+                  fontSize: "0.875rem",
+                  color: pathname?.startsWith(item.href) ? "var(--foreground)" : "var(--muted-foreground)"
+                }}
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div style={{ display: "none" }} className="md:flex md:items-center md:gap-3">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="text-xs tracking-wide"
-            >
+            <Button variant="ghost" size="sm" asChild>
               <Link href="/admin/dashboard">管理</Link>
             </Button>
           </div>
 
-          {/* Mobile - 只显示按钮 */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Button */}
+          <div style={{ display: "flex" }} className="md:hidden items-center gap-2">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
+            <button
               onClick={() => setIsOpen(true)}
+              style={{
+                width: "2.25rem",
+                height: "2.25rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer"
+              }}
             >
-              <Menu className="h-5 w-5" />
-            </Button>
+              <Menu style={{ width: "1.25rem", height: "1.25rem" }} />
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu - 完全独立的层，只在移动端显示 */}
+      {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 z-[100] flex">
-          {/* 关闭区域 - 点击关闭 */}
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex"
+          }}
+          className="md:hidden"
+        >
+          {/* Backdrop */}
           <div
-            className="flex-1 bg-black/30"
             onClick={() => setIsOpen(false)}
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0, 0, 0, 0.4)"
+            }}
           />
 
-          {/* 菜单面板 - 完全不透明 */}
-          <div className="w-64 bg-background border-l flex flex-col">
-            {/* 头部 */}
-            <div className="flex items-center justify-between h-16 px-4 border-b">
-              <span className="font-medium">菜单</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
+          {/* Menu */}
+          <div
+            style={{
+              width: "16rem",
+              backgroundColor: "var(--background)",
+              borderLeft: "1px solid var(--border)",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            {/* Header */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              height: "4rem",
+              padding: "0 1rem",
+              borderBottom: "1px solid var(--border)"
+            }}>
+              <span style={{ fontWeight: 500 }}>菜单</span>
+              <button
                 onClick={() => setIsOpen(false)}
+                style={{
+                  width: "2rem",
+                  height: "2rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer"
+                }}
               >
-                <X className="h-5 w-5" />
-              </Button>
+                <X style={{ width: "1.25rem", height: "1.25rem" }} />
+              </button>
             </div>
 
-            {/* 导航 */}
-            <nav className="flex-1 p-2">
+            {/* Links */}
+            <nav style={{ flex: 1, padding: "0.5rem" }}>
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "block px-4 py-3 rounded-lg text-[15px] transition-colors",
-                    pathname?.startsWith(item.href)
-                      ? "text-foreground bg-muted font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
+                  style={{
+                    display: "block",
+                    padding: "0.75rem 1rem",
+                    fontSize: "0.9375rem",
+                    borderRadius: "0.5rem",
+                    color: pathname?.startsWith(item.href) ? "var(--foreground)" : "var(--muted-foreground)",
+                    backgroundColor: pathname?.startsWith(item.href) ? "var(--muted)" : "transparent",
+                    fontWeight: pathname?.startsWith(item.href) ? 500 : 400
+                  }}
                 >
                   {item.label}
                 </Link>
               ))}
             </nav>
 
-            {/* 底部 */}
-            <div className="p-4 border-t">
+            {/* Footer */}
+            <div style={{ padding: "1rem", borderTop: "1px solid var(--border)" }}>
               <Link
                 href="/admin/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+                style={{
+                  display: "block",
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.875rem",
+                  color: "var(--muted-foreground)"
+                }}
               >
                 进入后台
               </Link>
