@@ -28,7 +28,7 @@ export async function GET() {
       createdAt: posts.createdAt,
     })
     .from(posts)
-    .where(eq(posts.status, sql`PUBLISHED`))
+    .where(eq(posts.status, "PUBLISHED"))
     .orderBy(desc(posts.publishedAt))
     .limit(20)
 

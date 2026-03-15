@@ -1,14 +1,29 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/db"
 import { comments } from "@/db/schema"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
 
 // GET /api/comments - 获取评论列表
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const postId = searchParams.get("postId")
+    const type = searchParams.get("type")
 
+    // 留言板评论 (postId 为 null)
+    if (type === "guestbook") {
+      const commentList = await db
+        .select()
+        .from(comments)
+        .where(and(sql`${comments.postId} IS NULL`, eq(comments.isApproved, true)))
+
+      return NextResponse.json({
+        success: true,
+        data: commentList,
+      })
+    }
+
+    // 文章评论
     if (!postId) {
       return NextResponse.json(
         { success: false, error: "Post ID is required" },

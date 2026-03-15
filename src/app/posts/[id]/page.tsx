@@ -182,7 +182,7 @@ export default function PostPage() {
         <header className="mb-8">
           <Link
             href={`/posts/${getCategorySlug(post.category)}`}
-            className="inline-block text-xs text-muted-foreground hover:text-accent transition-colors mb-4"
+            className="inline-block text-sm text-muted-foreground hover:text-accent transition-colors mb-4"
           >
             ← {getCategoryLabel(post.category)}
           </Link>
@@ -288,10 +288,10 @@ export default function PostPage() {
             variant="ghost"
             size="sm"
             onClick={() => router.push("/posts")}
-            className="text-xs"
+            className="text-sm"
           >
-            <span className="flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="flex items-center gap-1.5">
+              <ArrowLeft className="w-4 h-4" />
               返回列表
             </span>
           </Button>

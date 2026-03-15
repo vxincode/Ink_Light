@@ -47,6 +47,12 @@ export async function GET(
       .where(eq(users.id, album.authorId))
       .limit(1)
 
+    // 增加浏览数
+    await db
+      .update(albums)
+      .set({ views: (album.views || 0) + 1 })
+      .where(eq(albums.id, albumId))
+
     return successResponse({
       ...album,
       photos: photoList,

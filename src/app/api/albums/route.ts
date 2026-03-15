@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     // 构建查询条件
     const conditions = publicOnly ? [eq(albums.isPublic, true)] : []
 
-    // 获取相册列表，同时统计照片数量
+    // 获取相册列表，同时统计照片数量和获取第一张照片
     const albumList = await db
       .select({
         id: albums.id,
@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
         createdAt: albums.createdAt,
         updatedAt: albums.updatedAt,
         photoCount: count(photos.id).as("photo_count"),
+        firstPhotoUrl: sql<string>`(SELECT url FROM photos WHERE photos.album_id = albums.id ORDER BY photos.order ASC, photos.created_at ASC LIMIT 1)`.as("first_photo_url"),
       })
       .from(albums)
       .leftJoin(photos, eq(albums.id, photos.albumId))
@@ -37,13 +38,19 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset)
 
+    // 处理封面图片：如果没有封面则使用第一张照片
+    const processedAlbums = albumList.map(album => ({
+      ...album,
+      coverImage: album.coverImage || album.firstPhotoUrl || null,
+    }))
+
     // 获取总数
     const totalResult = await db
       .select({ count: count() })
       .from(albums)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
 
-    return paginatedResponse(albumList, page, limit, totalResult[0].count)
+    return paginatedResponse(processedAlbums, page, limit, totalResult[0].count)
   } catch (error) {
     console.error("Error fetching albums:", error)
     return errorResponse("获取相册列表失败")

@@ -63,26 +63,25 @@ export default function AlbumsPage() {
                 <Link
                   key={album.id}
                   href={`/albums/${album.id}`}
-                  className="group relative aspect-[4/5] bg-muted overflow-hidden"
+                  className="group relative overflow-hidden rounded-lg aspect-[4/3]"
                 >
-                  {album.coverImage && (
+                  {album.coverImage ? (
                     <img
                       src={album.coverImage}
                       alt={album.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 flex flex-col justify-end p-4">
-                    <div className="transform translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="font-display text-lg text-white font-medium">{album.title}</h3>
-                      {album.description && (
-                        <p className="text-sm text-white/70">{album.description}</p>
-                      )}
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <span className="text-4xl text-muted-foreground/30">📷</span>
                     </div>
-                    <div className="flex items-center justify-between mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span className="text-xs text-white/60">{album.photoCount} 张</span>
-                      <ArrowUpRight className="w-3 h-3 text-white/60" />
+                  )}
+                  {/* 底部白色文字覆盖层 */}
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                    <h3 className="font-medium text-sm text-white truncate">{album.title}</h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs text-white/70">{album.photoCount} 张</span>
+                      <ArrowUpRight className="w-3 h-3 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 </Link>
