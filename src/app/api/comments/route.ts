@@ -39,8 +39,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    // 兼容两种字段名: author/authorName, email/authorEmail
+    const author = body.author || body.authorName
+    const email = body.email || body.authorEmail
+
     // 验证必填字段
-    if (!body.content || !body.author) {
+    if (!body.content || !author) {
       return NextResponse.json(
         { success: false, error: "Content and author are required" },
         { status: 400 }
@@ -49,8 +53,8 @@ export async function POST(request: NextRequest) {
 
     const newComment = await db.insert(comments).values({
       content: body.content,
-      author: body.author,
-      email: body.email,
+      author: author,
+      email: email,
       website: body.website,
       postId: body.postId,
       parentId: body.parentId,
