@@ -49,8 +49,6 @@ module.exports = {
       listen_timeout: 30000,
       kill_timeout: 5000,
 
-      // 崩溃时不立即重启，等待 restart_delay
-      exp_backoff_restart_delay: true,
     }
   ]
 }
