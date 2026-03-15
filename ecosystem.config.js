@@ -2,38 +2,36 @@
  * PM2 生态系统配置文件
  * 用于宝塔面板 PM2 管理器部署
  *
- * 使用方法:
- * 1. 宝塔面板 -> 软件商店 -> PM2管理器 -> 设置
- * 2. 添加项目 -> 选择项目目录 -> 选择此配置文件
- *
- * 或命令行:
- * pm2 start ecosystem.config.js
- * pm2 save
+ * 部署步骤:
+ * 1. cd /www/wwwroot/Ink_Light
+ * 2. npm install
+ * 3. npm run build   <-- 必须先构建
+ * 4. pm2 start ecosystem.config.js
+ * 5. pm2 save
  */
 
 module.exports = {
   apps: [
     {
       name: 'ink-light-blog',
-      script: 'npm',
-      args: 'run start',
+      script: 'node_modules/next/dist/bin/next',
+      args: 'start',
       cwd: './',
 
-      // 环境变量 (可选，优先使用 .env 文件)
+      // 环境变量
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
       },
 
-      // 实例数量 (根据服务器配置调整)
+      // 实例数量 (根据服务器配置调整，建议设为 CPU 核心数或 1)
       instances: 1,
 
       // 执行模式
       exec_mode: 'fork',
 
-      // 自动重启
+      // 不监听文件变化
       watch: false,
-      ignore_watch: ['node_modules', '.next', 'public/uploads'],
 
       // 日志配置
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
@@ -48,11 +46,11 @@ module.exports = {
       max_restarts: 10,
 
       // 启动超时
-      listen_timeout: 10000,
+      listen_timeout: 30000,
       kill_timeout: 5000,
 
-      // 环境变量文件
-      env_file: '.env',
+      // 崩溃时不立即重启，等待 restart_delay
+      exp_backoff_restart_delay: true,
     }
   ]
 }
