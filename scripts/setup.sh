@@ -2,12 +2,25 @@
 
 # 博客系统初始化脚本
 # 用于生产环境部署时的交互式配置
+#
+# 使用方法:
+#   cd /path/to/Ink_Light
+#   chmod +x scripts/setup.sh
+#   ./scripts/setup.sh
 
 set -e
+
+# 获取脚本所在目录和项目根目录
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# 切换到项目根目录
+cd "$PROJECT_DIR"
 
 echo ""
 echo "🚀 博客系统初始化向导"
 echo "========================"
+echo "项目目录: $PROJECT_DIR"
 echo ""
 
 # 颜色定义
@@ -19,6 +32,13 @@ NC='\033[0m' # No Color
 # 检查 Node.js
 if ! command -v node &> /dev/null; then
     echo -e "${RED}❌ 未安装 Node.js${NC}"
+    exit 1
+fi
+
+# 检查是否在正确的目录
+if [ ! -f "package.json" ]; then
+    echo -e "${RED}❌ 未找到 package.json，请在项目根目录运行此脚本${NC}"
+    echo "   正确用法: cd /path/to/Ink_Light && ./scripts/setup.sh"
     exit 1
 fi
 
@@ -79,6 +99,7 @@ done
 echo ""
 echo "🗄️  请输入数据库配置"
 echo "------------------------"
+echo -e "${YELLOW}提示: PostgreSQL 默认用户是 postgres，不是 root${NC}"
 
 read -p "数据库主机 [localhost]: " DB_HOST
 DB_HOST=${DB_HOST:-localhost}
@@ -131,12 +152,46 @@ if [ "$install_deps" != "n" ]; then
     npm install
 fi
 
+# 测试数据库连接
+echo ""
+echo "🔍 测试数据库连接..."
+
+DB_TEST_RESULT=$(node -e "
+const postgres = require('postgres');
+const sql = postgres(process.env.DATABASE_URL, { connect_timeout: 5 });
+sql\`SELECT 1 as test\`
+  .then(() => { console.log('SUCCESS'); sql.end(); })
+  .catch((e) => { console.log('FAILED:', e.message); process.exit(1); });
+" 2>&1)
+
+if echo "$DB_TEST_RESULT" | grep -q "SUCCESS"; then
+    echo -e "${GREEN}✅ 数据库连接成功${NC}"
+else
+    echo -e "${RED}❌ 数据库连接失败${NC}"
+    echo "   错误信息: $(echo "$DB_TEST_RESULT" | grep -o 'FAILED:.*' || echo '未知错误')"
+    echo ""
+    echo "   常见问题:"
+    echo "   1. 数据库用户不存在 - PostgreSQL 默认用户是 'postgres'"
+    echo "   2. 数据库未创建 - 需要先创建数据库: CREATE DATABASE $DB_NAME;"
+    echo "   3. 密码错误 - 检查数据库密码是否正确"
+    echo "   4. 连接被拒绝 - 检查数据库服务是否启动"
+    echo ""
+    read -p "是否继续? (y/N): " continue_setup
+    if [ "$continue_setup" != "y" ]; then
+        exit 1
+    fi
+fi
+
 # 数据库迁移
 echo ""
 echo "📦 运行数据库迁移..."
 npx drizzle-kit push || {
-    echo -e "${YELLOW}⚠️  数据库迁移失败，请检查数据库连接${NC}"
+    echo -e "${YELLOW}⚠️  数据库迁移失败${NC}"
     echo "   你可以稍后手动运行: npx drizzle-kit push"
+    read -p "是否继续? (y/N): " continue_setup
+    if [ "$continue_setup" != "y" ]; then
+        exit 1
+    fi
 }
 
 # 创建管理员和网站设置
